@@ -3,13 +3,20 @@ import { View, Text, Button } from 'react-native';
 import { useSignIn } from '@clerk/clerk-react';
 
 export default function LoginScreen() {
-  const { signIn } = useSignIn();
+  const { signIn, isLoaded } = useSignIn();
 
   const handleLogin = async () => {
-    await signIn.create({
-      strategy: 'oauth_google',
-    });
+    if (signIn && isLoaded) {
+      await signIn.create({
+        strategy: 'oauth_google',
+        redirectUrl: 'tp-note-repas://oauth-callback',
+      });
+    }
   };
+
+  if (!isLoaded) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
     <View>

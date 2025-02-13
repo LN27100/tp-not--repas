@@ -11,9 +11,11 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.22.12",
     "@react-native-async-storage/async-storage": "1.23.1",
+    "babel-plugin-inline-dotenv": "^1.7.0",
     "expo": "~52.0.33",
     "expo-camera": "~16.0.16",
     "expo-constants": "~17.0.5",
+    "expo-dotenv": "^0.1.0",
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.17",
     "expo-sqlite": "~15.1.2",
