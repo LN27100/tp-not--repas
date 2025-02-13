@@ -35,13 +35,11 @@ const AddMealScreen = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const loadSelectedFoods = async () => {
-      const storedFoods = await AsyncStorage.getItem('selectedFoods');
-      if (storedFoods) {
-        setSelectedFoods(JSON.parse(storedFoods));
-      }
+    const resetSelectedFoods = async () => {
+      setSelectedFoods([]);
+      await AsyncStorage.removeItem('selectedFoods');
     };
-    loadSelectedFoods();
+    resetSelectedFoods();
   }, []);
 
   const searchFood = async () => {
@@ -100,6 +98,12 @@ const AddMealScreen = () => {
       const meals = storedMeals ? JSON.parse(storedMeals) : [];
       meals.push(newMeal);
       await AsyncStorage.setItem('meals', JSON.stringify(meals));
+
+      setSelectedFoods([]);
+      await AsyncStorage.removeItem('selectedFoods');
+
+      console.log('Repas sauvegardé et aliments sélectionnés réinitialisés.');
+
       setShowModal(false);
       router.push('/(main)/(home)');
     } catch (error) {
