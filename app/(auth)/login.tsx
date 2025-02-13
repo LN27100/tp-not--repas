@@ -50,7 +50,7 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <Button title="Sign In" onPress={onSignInPress} color="#007AFF" />
+      <Button title="Sign In" onPress={onSignInPress} color="#34D399" />
 
       <View style={styles.linkContainer}>
         <Text>Don't have an account?</Text>
@@ -62,7 +62,6 @@ export default function LoginScreen() {
   );
 }
 
-// ✅ Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

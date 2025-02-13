@@ -62,7 +62,7 @@ export default function SignUpScreen() {
             placeholder="Enter verification code"
             onChangeText={setCode}
           />
-          <Button title="Verify" onPress={onVerifyPress} color="#007AFF" />
+          <Button title="Verify" onPress={onVerifyPress} color="#34D399" />
         </>
       ) : (
         <>
@@ -80,14 +80,13 @@ export default function SignUpScreen() {
             secureTextEntry
             onChangeText={setPassword}
           />
-          <Button title="Continue" onPress={onSignUpPress} color="#007AFF" />
+          <Button title="Continue" onPress={onSignUpPress} color="#34D399" />
         </>
       )}
     </View>
   );
 }
 
-// ✅ Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,

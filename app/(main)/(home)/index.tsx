@@ -1,7 +1,7 @@
-// app/(main)/(home)/index.tsx
 import React, { useState, useEffect } from 'react';
 import { Text, View, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type FoodItem = {
   food: {
@@ -12,30 +12,46 @@ type FoodItem = {
   };
 };
 
-const APP_ID = '7fe32169'; 
-const APP_KEY = '0fdebb8fe5403c15564a867a25a3d790';
+type Meal = {
+  id: string;
+  title: string;
+  foods: FoodItem[];
+};
 
 const HomeScreen = () => {
   const router = useRouter();
-  const [meals, setMeals] = useState<FoodItem[]>([]);
+  const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchMeals = async () => {
+    const loadMeals = async () => {
       try {
-        const response = await fetch(
-          `https://api.edamam.com/api/food-database/v2/parser?app_id=${APP_ID}&app_key=${APP_KEY}&ingr=pasta`
-        );
-        const data = await response.json();
-        setMeals(data.hints || []);
+        const storedMeals = await AsyncStorage.getItem('meals');
+        if (storedMeals) {
+          const parsedMeals = JSON.parse(storedMeals);
+          if (Array.isArray(parsedMeals)) {
+            setMeals(parsedMeals);
+          } else {
+            console.error('Les repas stockés ne sont pas un tableau valide.');
+          }
+        }
       } catch (error) {
         console.error('Erreur lors de la récupération des repas :', error);
       } finally {
         setLoading(false);
       }
     };
-    fetchMeals();
+
+    loadMeals();
   }, []);
+
+  const handleMealClick = (meal: Meal) => {
+    if (meal && meal.id) {
+      router.push(`/(home)/${meal.id}`);
+    } else {
+      console.error('Repas invalide :', meal);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -45,12 +61,15 @@ const HomeScreen = () => {
       ) : (
         <FlatList
           data={meals}
-          keyExtractor={(_, index) => index.toString()}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={styles.mealItem}>
-              <Text style={styles.mealName}>{item.food.label}</Text>
-              <Text style={styles.mealCalories}>{item.food.nutrients.ENERC_KCAL} Calories</Text>
-            </View>
+            <TouchableOpacity
+              style={styles.mealItem}
+              onPress={() => handleMealClick(item)}
+            >
+              <Text style={styles.mealName}>{item.title}</Text>
+              <Text style={styles.mealCalories}>{item.foods.length} Aliments</Text>
+            </TouchableOpacity>
           )}
         />
       )}
@@ -95,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#34D399',
     borderRadius: 10,
     paddingVertical: 12,
     paddingHorizontal: 20,
