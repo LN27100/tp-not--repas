@@ -1,20 +1,16 @@
-import { ClerkProvider, RedirectToSignIn, SignedIn, SignedOut } from '@clerk/clerk-react';
-import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
-
-const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+import { ClerkProvider } from '@clerk/clerk-expo';
+import { Slot } from 'expo-router';
 
 export default function Layout() {
-  const colorScheme = useColorScheme();
+  const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!publishableKey) {
+    throw new Error('Add EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY to your .env file');
+  }
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
-      <SignedIn>
-        <Tabs screenOptions={{ headerStyle: { backgroundColor: colorScheme === 'dark' ? '#000' : '#fff' } }} />
-      </SignedIn>
-      <SignedOut>
-        <RedirectToSignIn />
-      </SignedOut>
+    <ClerkProvider publishableKey={publishableKey}>
+      <Slot />
     </ClerkProvider>
   );
 }

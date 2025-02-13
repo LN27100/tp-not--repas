@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Button } from 'react-native';
-import { useSignIn } from '@clerk/clerk-react';
+import { useSignIn } from '@clerk/clerk-expo';
 
 export default function LoginScreen() {
   const { signIn, isLoaded } = useSignIn();
@@ -19,7 +19,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <View>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Text>Login Screen</Text>
       <Button title="Login with Google" onPress={handleLogin} />
     </View>
