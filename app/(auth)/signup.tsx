@@ -1,71 +1,115 @@
-import React from 'react';
-import { View, Text, Button, TextInput, StyleSheet } from 'react-native';
-import { useSignUp, useSignIn } from '@clerk/clerk-expo';
+import * as React from "react";
+import { Text, TextInput, Button, View, StyleSheet } from "react-native";
+import { useSignUp } from "@clerk/clerk-expo";
+import { useRouter } from "expo-router";
 
 export default function SignUpScreen() {
-  const { signUp, isLoaded: isSignUpLoaded } = useSignUp();
-  const { signIn, isLoaded: isSignInLoaded } = useSignIn();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const router = useRouter();
 
-  const handleSignUp = async () => {
-    if (!isSignUpLoaded || !isSignInLoaded) return;
+  const [emailAddress, setEmailAddress] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [pendingVerification, setPendingVerification] = React.useState(false);
+  const [code, setCode] = React.useState("");
+
+  const onSignUpPress = async () => {
+    if (!isLoaded) return;
+
     try {
       await signUp.create({
-        emailAddress: email,
+        emailAddress,
         password,
       });
 
-      if (signIn) {
-        await signIn.create({
-          identifier: email,
-          password,
-        });
-      }
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+      setPendingVerification(true);
     } catch (err) {
-      console.error(err);
+      console.error(JSON.stringify(err, null, 2));
     }
   };
 
-  if (!isSignUpLoaded || !isSignInLoaded) {
-    return <Text>Loading...</Text>;
-  }
+  const onVerifyPress = async () => {
+    if (!isLoaded) return;
+
+    try {
+      const signUpAttempt = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+
+      if (signUpAttempt.status === "complete") {
+        await setActive({ session: signUpAttempt.createdSessionId });
+        router.replace("/");
+      } else {
+        console.error(JSON.stringify(signUpAttempt, null, 2));
+      }
+    } catch (err) {
+      console.error(JSON.stringify(err, null, 2));
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text>Sign Up</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button title="Sign Up" onPress={handleSignUp} />
+      <Text style={styles.title}>
+        {pendingVerification ? "Verify Your Email" : "Sign Up"}
+      </Text>
+
+      {pendingVerification ? (
+        <>
+          <TextInput
+            style={styles.input}
+            value={code}
+            placeholder="Enter verification code"
+            onChangeText={setCode}
+          />
+          <Button title="Verify" onPress={onVerifyPress} color="#007AFF" />
+        </>
+      ) : (
+        <>
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            value={emailAddress}
+            placeholder="Enter email"
+            onChangeText={setEmailAddress}
+          />
+          <TextInput
+            style={styles.input}
+            value={password}
+            placeholder="Enter password"
+            secureTextEntry
+            onChangeText={setPassword}
+          />
+          <Button title="Continue" onPress={onSignUpPress} color="#007AFF" />
+        </>
+      )}
     </View>
   );
 }
 
+// ✅ Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#F7F7F7",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    width: "100%",
+    height: 50,
+    borderColor: "#ccc",
     borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-    width: '100%',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    backgroundColor: "#fff",
+    marginBottom: 15,
   },
 });
+
