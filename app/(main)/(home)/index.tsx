@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Text, View, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 type FoodItem = {
   food: {
@@ -53,6 +54,37 @@ const HomeScreen = () => {
     }
   };
 
+  const handleDeleteMeal = async (mealId: string) => {
+    Alert.alert(
+      'Supprimer le repas',
+      'Êtes-vous sûr de vouloir supprimer ce repas ?',
+      [
+        {
+          text: 'Annuler',
+          style: 'cancel',
+        },
+        {
+          text: 'Supprimer',
+          onPress: async () => {
+            try {
+              const storedMeals = await AsyncStorage.getItem('meals');
+              if (storedMeals) {
+                let meals = JSON.parse(storedMeals);
+                meals = meals.filter((meal: Meal) => meal.id !== mealId);
+                await AsyncStorage.setItem('meals', JSON.stringify(meals));
+                setMeals(meals);
+              }
+            } catch (error) {
+              console.error('Erreur lors de la suppression du repas :', error);
+            }
+          },
+          style: 'destructive',
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Liste des Repas</Text>
@@ -63,13 +95,21 @@ const HomeScreen = () => {
           data={meals}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.mealItem}
-              onPress={() => handleMealClick(item)}
-            >
-              <Text style={styles.mealName}>{item.title}</Text>
-              <Text style={styles.mealCalories}>{item.foods.length} Aliments</Text>
-            </TouchableOpacity>
+            <View style={styles.mealItem}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => handleMealClick(item)}
+              >
+                <Text style={styles.mealName}>{item.title}</Text>
+                <Text style={styles.mealCalories}>{item.foods.length} Aliments</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteMeal(item.id)}
+              >
+                <Ionicons name="trash-outline" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
           )}
         />
       )}
@@ -96,6 +136,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   mealItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 10,
     marginVertical: 5,
     backgroundColor: '#f2f2f2',
@@ -108,6 +151,11 @@ const styles = StyleSheet.create({
   mealCalories: {
     fontSize: 16,
     color: '#555',
+  },
+  deleteButton: {
+    backgroundColor: '#FF6347',
+    padding: 5,
+    borderRadius: 5,
   },
   buttonContainer: {
     marginTop: 20,

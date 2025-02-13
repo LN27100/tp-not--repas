@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router'; 
+import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type FoodItem = {
@@ -19,8 +19,7 @@ type Meal = {
 };
 
 const MealDetailScreen = () => {
-  const router = useRouter();
-  const { id } = router.query;  // Récupère l'ID du repas à partir de l'URL
+  const { id } = useLocalSearchParams();
   const [meal, setMeal] = useState<Meal | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +40,7 @@ const MealDetailScreen = () => {
     };
 
     if (id) {
-      loadMealDetails();  // Charger les détails du repas lorsque l'ID est disponible
+      loadMealDetails();
     }
   }, [id]);
 
@@ -52,6 +51,8 @@ const MealDetailScreen = () => {
   if (!meal) {
     return <Text>Repas non trouvé.</Text>;
   }
+
+  const totalCalories = meal.foods.reduce((total, item) => total + item.food.nutrients.ENERC_KCAL, 0);
 
   return (
     <View style={styles.container}>
@@ -66,6 +67,9 @@ const MealDetailScreen = () => {
           </View>
         )}
       />
+      <View style={styles.totalCaloriesContainer}>
+        <Text style={styles.totalCaloriesText}>Total Calories: {totalCalories}</Text>
+      </View>
     </View>
   );
 };
@@ -89,6 +93,17 @@ const styles = StyleSheet.create({
   foodLabel: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  totalCaloriesContainer: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#e2e2e2',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  totalCaloriesText: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
